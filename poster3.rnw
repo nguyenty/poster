@@ -7,9 +7,12 @@
 
 \documentclass[final]{beamer}
 \usepackage[scale=1.24]{beamerposter}
-\usepackage{graphicx}			% allows us to import images
+\usecolortheme[RGB={0,0,144}]{structure}
+\usetheme{AnnArbor}\usecolortheme{beaver}
+\usepackage{graphicx}  		% allows us to import images
 \usepackage{tikz}
 \usepackage{verbatim,xmpmulti,color,multicol,multirow}
+\usepackage{amssymb,amsmath,latexsym}
 %-----------------------------------------------------------
 % Custom commands that I use frequently
 %-----------------------------------------------------------
@@ -63,7 +66,7 @@
 \setbeamercolor{block title}{fg=ngreen,bg=white}
 \setbeamercolor{block body}{fg=black,bg=white}
 \setbeamercolor{block alerted title}{fg=white,bg=dblue!70}
-\setbeamercolor{block alerted body}{fg=black,bg=dblue!10}
+\setbeamercolor{block alerted body}{fg=black,bg=white!10}
 
 %-----------------------------------------------------------
 % Name and authors of poster/paper/research
@@ -72,8 +75,8 @@
 \title{Accounting for Nuisance Covariates when Using
 RNA-Seq Data \\
 to Identify Differentially Expressed Genes}
-\author{Yet Nguyen and Dan Nettleton}
-\institute{Department of Statistics, Iowa State University}
+\author{Yet Nguyen and Dan Nettleton, Department of Statistics, Iowa State University}
+%\institute{}
 
 %-----------------------------------------------------------
 % Start the poster itself
@@ -91,7 +94,7 @@ opts_chunk$set(fig.width=8, fig.height=5, fig.align='center', size='tiny')
 library(reshape)
 library(ggplot2)
 library(dplyr)
-
+library(gridExtra)
 @
 
 \addtobeamertemplate{headline}{} 
@@ -104,7 +107,7 @@ library(dplyr)
   \begin{columns}[t]												% the [t] option aligns the column's content at the top
     \begin{column}{\sepwid}\end{column}			% empty spacer column
     \begin{column}{\onecolwid}
-%       \begin{alertblock}{Introduction}
+%       \begin{block}{Introduction}
 %         \rmfamily{ Suppose that we have RNA sequencing (RNA-seq) read count data  
 %         on $J$ genes from an experiment with two treatment groups. We want to find genes that are differentially expressed (DE) 
 %         between two treatment groups. Analyses can often be complicated by the presence of nuisance 
@@ -112,9 +115,9 @@ library(dplyr)
 %         heterogeneity of experimental units that can be seen in 
 %         continuous covariates measured for each experimental unit 
 %         and/or RNA sample.}
-%       \end{alertblock}
+%       \end{block}
 %       \vskip2ex
-      \begin{alertblock}{Prototypical Dataset}
+      \begin{block}{Prototypical Dataset}
         \rmfamily{
         \begin{table} [h!]
 \centering
@@ -148,7 +151,7 @@ x            & 0.5    & 0.95   & \dots  & -1.42    & -.45   & .89    & \dots  & 
 \end{tabular}
 \end{table}
         }
-      \end{alertblock}
+      \end{block}
       \vskip2ex
       \begin{block}{Analysis Strategies}
         \rmfamily{
@@ -175,21 +178,24 @@ x <- c(-2, 2)
 y <- c(-1, 1)
 plot(x, y, ylab = "log(mean)",
           xlab = "x", xlim = x, ylim = y ,
-     type = "n")
+     type = "n", 
+     cex.lab=2, cex.axis=2, cex.main=2, cex.sub=2)
 abline(h =.3, col = "purple")
 # plot2
 x <- c(-2, 2)
 y <- c(-1, 1)
 plot(x, y, ylab = "log(mean)",
      xlab = "x", xlim = x, ylim = y ,
-     type = "n")
+     type = "n", 
+     cex.lab=2, cex.axis=2, cex.main=2, cex.sub=2)
 lines(c(-3,3), c(-0.5, 1), col = "purple")
 # plot3
 x <- c(-2, 2)
 y <- c(-1, 1)
 plot(x, y, ylab = "log(mean)",
      xlab = "x", xlim = x, ylim = y ,
-     type = "n")
+     type = "n", 
+     cex.lab=2, cex.axis=2, cex.main=2, cex.sub=2)
 abline(h =.3, col = "blue")
 abline(h =-.2, col = "red")
 # plot4
@@ -197,7 +203,8 @@ x <- c(-2, 2)
 y <- c(-1, 1)
 plot(x, y, ylab = "log(mean)",
      xlab = "x", xlim = x, ylim = y ,
-     type = "n")
+     type = "n", 
+     cex.lab=2, cex.axis=2, cex.main=2, cex.sub=2)
 lines(c(-3,3), c(-0.3, 1.2), col = "blue")
 
 lines(c(-3,3), c(-0.6, 0.9), col = "red")
@@ -206,7 +213,7 @@ lines(c(-3,3), c(-0.6, 0.9), col = "red")
 \end{block}
 \vskip2ex
 
-\begin{alertblock}{Model for Simulated Data}
+\begin{block}{Model for Simulated Data}
 \rmfamily{
 $i =1, 2$;  $j = 1, \cdots, J$; $k = 1, \cdots, n$ 
  \begin{equation*}
@@ -219,7 +226,7 @@ where
  \item $x_{k}\sim N(0,1).$
  \end{itemize}
 }
-\end{alertblock}
+\end{block}
 
 \vskip2ex
     \end{column}
@@ -244,9 +251,7 @@ where
  \end{itemize}
 }
 \end{block}
-
-\vskip2ex
-\begin{alertblock}{Simulated Slope Coefficients}
+\begin{block}{Simulated Slope Coefficients}
 \rmfamily{
 \begin{itemize}
 \item $\beta_j \sim \frac{\nu}{2}\times\mbox{Unif}(L,U)+ \frac{\nu}{2}\times(-\mbox{Unif}(L, U))\\$ $\qquad\quad + (1-\nu)\times \delta_{\{0\}} $
@@ -254,7 +259,7 @@ where
 \item $(L,U) \in \{(0.1, 0.5),(1, 1.5)\} $
 \end{itemize}
 }
-\end{alertblock}
+\end{block}
 
 \begin{block}{Testing for Trt and Cov Effects}
 \rmfamily{
@@ -272,9 +277,8 @@ where
 \end{itemize}     
 }
 \end{block}
-\vskip2ex
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{alertblock}{Methods for Identification of DEG}
+\begin{block}{Methods for Identification of DEG}
 \rmfamily{
 % We consider 5 methods for converting $p_{j\tau}, p_{j\tau|\beta}, p_{j\beta|\tau}$
 % to a decision about the DE status of gene $j$.
@@ -308,16 +312,17 @@ where
            $ (j = 1,\dots, J)$.
 \end{itemize}    
 }
-\end{alertblock}
+\end{block}
 \vskip2ex
 \end{column}
 %%%%%%%%%%%%%%
-\begin{column}{\sepwid}\end{column}  		% empty spacer column
 
-\begin{column}{\onecolwid}							% create a two-column-wide column and then we will split it up later
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{block}{Computing EBP}
+    \begin{column}{\sepwid}\end{column}  		% empty spacer column
+    \begin{column}{\twocolwid}							% create a two-column-wide column and then we will split it up later
+      \begin{columns}[t,totalwidth=\twocolwid]	% split up that two-column-wide column
+        \begin{column}{\onecolwid}\vspace{-.69in}
+          \begin{block}{Computing EBP}
 \rmfamily{
 \begin{itemize}
 %\setlength{\itemsep}{.2in}
@@ -325,11 +330,11 @@ where
 \item Suppose $p_j$ is a $p$-value for testing a null 
       hypothesis $H_{0j}$ for $j = 1, \cdots, J$.
 
-\item The EBP for $p_j$ is computed as 
-      \[
+\item 
+      $
       \mbox{EBP}(p_j):= \widehat{\mbox{P}}(H_{0j}|p_j) = 
       \frac{\hat{\pi}_0}{\hat{f}(p_j)},
-      \]
+      $
       where $\hat{f}$ is the Grenander estimator of the pdf of $p$-values, 
       which is the nonparametric MLE of  decreasing pdf of $p$-values, and
       $\hat{\pi}_0 = \hat{f}(1)$.
@@ -337,13 +342,10 @@ where
 \end{itemize}    
 }
 \end{block}
-\vskip2ex
-\end{column}
-%%%%%%%%%%%%%%%%%%%%
 
-\begin{column}{\sepwid}\end{column}			% empty spacer column
-  \begin{column}{\onecolwid}
-    \begin{block}{Evaluation of Methods}
+        \end{column}
+        \begin{column}{\onecolwid}\vspace{-.69in}
+              \begin{block}{Evaluation of Methods}
       \rmfamily{
       \begin{itemize}
  \item For  100 replications of each simulation setting, we compute
@@ -360,13 +362,12 @@ where
 \end{itemize}
       }
     \end{block}
-    \vskip2ex
-    %%%%%%%%%%%%%%%%%%%%
-    \begin{block}{PAUROC ($\mbox{FPR}\leq 0.05$), $n = 5$}
-      \rmfamily{
-    <<aucall_05, echo = FALSE, results = 'asis',fig.show='hold',warning=FALSE,message=FALSE>>=
-wd <- "/run/user/1000/gvfs/smb-share:server=smb.stat.iastate.edu,share=ntyet/research"
-#wd <- "/home/ntyet/research"
+        \end{column}
+      \end{columns}
+      \begin{block}{Simulation Results}		% an ACTUAL two-column-wide column
+        \rmfamily{
+        <<aucall_05, echo = FALSE, results = 'asis',fig.show='hold',warning=FALSE,message=FALSE>>=
+wd <- "/home/ntyet/research"
 load(file = paste(wd, "/K_20/pbeta_0/out_20_0.RData", sep = ""))
 load(file = paste(wd, "/K_20/pbeta_0.25/out_20_25.RData", sep = ""))
 load(file = paste(wd, "/K_20/pbeta_0.5/out_20_50.RData", sep = ""))
@@ -426,51 +427,280 @@ K_5_auc_out2_mean[K_5_auc_out2_mean$nu==0 & K_5_auc_out2_mean$Method == "oracle"
 
 #load(file = paste(wd, "/K_5/K_5_auc_out2_mean.RData", sep = ""))
 p <- ggplot(K_5_auc_out2_mean, aes(nu, PAUROC, colour = Method, group = Method)) + geom_line()
-p + facet_grid(.~setup )+
+p1 <- p + facet_grid(.~setup )+
   xlab(expression(paste(nu)))+
-  theme(axis.text=element_text(size=14),
-        axis.title=element_text(size=14))+ 
-      theme(strip.text.x = element_text(size = 14))+
-  theme(legend.text = element_text(size = 14))+ 
-  theme(legend.title = element_text(size = 14))
+  theme(axis.text=element_text(size=20),
+        axis.title=element_text(size=20))+ 
+      theme(strip.text.x = element_text(size=20))+
+  theme(legend.text = element_text(size=20))+ 
+  theme(legend.title = element_text(size=20))+
+  ggtitle("PAUROC (FPR < 0.05), n = 5")+ 
+     theme(plot.title = element_text(size=20,lineheight=.8, face="bold"))
+
 @
-}
-    \end{block}
-    \vskip2ex
-    
-    
-    \begin{block}{For Further Information}
-      \small{\rmfamily{For the details of our work:
-      \begin{itemize}
-        \item Choi, M.-D., Johnston, N., and Kribs, D. W.. Journal of Physics A: Mathematical and Theoretical \textbf{42}, 245303 (2009).
-        \item Johnston, N., and Kribs, D. W., \emph{Generalized Multiplicative Domains and Quantum Error Correction} (2009, preprint).
-      \end{itemize}
-      \vspace{0.1in}\noindent Preprints and this poster can be downloaded from:
-      \begin{itemize}
-        \item www.arxiv.org
-        \item www.nathanieljohnston.com
-      \end{itemize}}}
-    \end{block}
-    \vskip2ex
-    \begin{block}{References}
-      \small{\rmfamily{\begin{thebibliography}{99}
-      \bibitem{KLPL06} D.~W. Kribs, R. Laflamme, D. Poulin, M. Lesosky, Quantum Inf. \& Comp. \textbf{6} (2006), 383-399.
-      \bibitem{zanardi97} P. Zanardi, M. Rasetti, Phys. Rev. Lett. \textbf{79},  3306 (1997).
-      \bibitem{KS06} D.~W. Kribs, R.~W. Spekkens, Phys. Rev. A \textbf{74}, 042329 (2006).
-      \bibitem{Cho74} M.-D. Choi, Illinois J. Math., \textbf{18} (1974), 565-574.
-      \bibitem{Dav96} K.~R. Davidson, \emph{$C^*$-algebras by example}, Fields Institute Monographs, 6. American Mathematical Society, Providence, RI, 1996.
-      \end{thebibliography}}}
-    \end{block}
-    \vskip2ex
-    \begin{block}{Acknowledgements}
-      \small{\rmfamily{M.-D.C. was supported by an NSERC Discovery Grant. N.J. was supported by an NSERC Canada Graduate Scholarship and the University of Guelph Brock Scholarship. D.W.K. was supported by an NSERC Discovery Grant and Discovery Accelerator Supplement, an Ontario Early Researcher Award, and CIF, OIT.}} \\
-      \vspace{0.5in}
-      \begin{center}
-        \begin{tabular}{ccc}
-          \includegraphics[width=3in]{TO.png} & \hspace{1.5in} & \includegraphics[width=3in]{guelph.png}
-        \end{tabular}
-      \end{center}
-    \end{block}
+
+
+
+<<fdpall, echo = FALSE, results = 'asis',fig.show='hold',warning=FALSE,message=FALSE>>=
+
+K_5_beta_1_fdp_out <- as.data.frame(rbind(out_5_0[[1]][,16+c(1,2,4,5,7,8)], 
+                                           out_5_25[[1]][,16+c(1,2,4,5,7,8)], 
+                                           out_5_50[[1]][,16+c(1,2,4,5,7,8)], 
+                                           out_5_75[[1]][,16+c(1,2,4,5,7,8)]))
+
+
+K_5_beta_2_fdp_out <- as.data.frame(rbind(out_5_0[[2]][,16+c(1,2,4,5,7,8)], 
+                                           out_5_25[[2]][,16+c(1,2,4,5,7,8)], 
+                                           out_5_50[[2]][,16+c(1,2,4,5,7,8)], 
+                                           out_5_75[[2]][,16+c(1,2,4,5,7,8)]))
+
+colnames(K_5_beta_1_fdp_out) <- 
+  colnames(K_5_beta_2_fdp_out) <- 
+  c("nocov", "cov", "ebp", "aic", "aaa", "oracle")
+K_5_beta_1_fdp_out$nu <- K_5_beta_2_fdp_out$nu <- rep(as.character(c(0,25,50,75)), each = 100)
+K_5_fdp_out <- rbind(K_5_beta_1_fdp_out, K_5_beta_2_fdp_out)
+
+K_5_fdp_out$setup <- rep(c("(L,U)=(0.1,0.5)", "(L,U)=(1,1.5)"), 
+                         each = dim(K_5_beta_1_fdp_out)[1])
+
+
+K_5_fdp_out_melt <- melt(K_5_fdp_out)
+colnames(K_5_fdp_out_melt)[3:4] <- c("Method", "FDR") 
+
+K_5_fdp_out_mean <- 
+K_5_fdp_out_melt %.%
+  group_by(nu, setup, Method) %.%
+  summarise(FDR = mean(FDR))
+
+K_5_fdp_out_mean[K_5_fdp_out_mean$nu==0 & K_5_fdp_out_mean$Method == "nocov",][,4] <- 
+  mean(K_5_fdp_out_mean[K_5_fdp_out_mean$nu==0 & K_5_fdp_out_mean$Method == "nocov",][,4] )
+
+K_5_fdp_out_mean[K_5_fdp_out_mean$nu==0 & K_5_fdp_out_mean$Method == "cov",][,4] <- 
+  mean(K_5_fdp_out_mean[K_5_fdp_out_mean$nu==0 & K_5_fdp_out_mean$Method == "cov",][,4] )
+
+K_5_fdp_out_mean[K_5_fdp_out_mean$nu==0 & K_5_fdp_out_mean$Method == "ebp",][,4] <- 
+  mean(K_5_fdp_out_mean[K_5_fdp_out_mean$nu==0 & K_5_fdp_out_mean$Method == "ebp",][,4] )
+
+K_5_fdp_out_mean[K_5_fdp_out_mean$nu==0 & K_5_fdp_out_mean$Method == "aic",][,4] <- 
+  mean(K_5_fdp_out_mean[K_5_fdp_out_mean$nu==0 & K_5_fdp_out_mean$Method == "aic",][,4] )
+
+K_5_fdp_out_mean[K_5_fdp_out_mean$nu==0 & K_5_fdp_out_mean$Method == "aaa",][,4] <- 
+  mean(K_5_fdp_out_mean[K_5_fdp_out_mean$nu==0 & K_5_fdp_out_mean$Method == "aaa",][,4] )
+
+K_5_fdp_out_mean[K_5_fdp_out_mean$nu==0 & K_5_fdp_out_mean$Method == "oracle",][,4] <- 
+  mean(K_5_fdp_out_mean[K_5_fdp_out_mean$nu==0 & K_5_fdp_out_mean$Method == "oracle",][,4] )
+
+#save(K_5_fdp_out_mean, file = paste(wd, "/K_5/K_5_fdp_out_mean.RData", sep = ""))
+
+#load(file = paste(wd, "/K_5/K_5_fdp_out_mean.RData", sep = ""))
+
+p <- ggplot(K_5_fdp_out_mean, aes(nu, FDR, colour = Method, group = Method)) + geom_line()
+p2 <- p + facet_grid(.~setup )+
+  xlab(expression(paste(nu)))+
+  theme(axis.text=element_text(size=20),
+        axis.title=element_text(size=20))+ 
+      theme(strip.text.x = element_text(size=20))+
+  theme(legend.text = element_text(size=20))+ 
+  theme(legend.title = element_text(size=20))+
+  ylab("Estimated FDR")+theme(axis.text=element_text(size=20),
+        axis.title=element_text(size=20))+
+  geom_hline(yintercept = 0.05)+
+  ggtitle("Control FDR at 5%, n = 5")+ 
+     theme(plot.title = element_text(size=20,lineheight=.8, face="bold"))
+
+@
+
+
+
+<<paucall_20, echo = FALSE, results = 'asis',fig.show='hold',warning=FALSE,message=FALSE>>=
+
+K_20_beta_1_auc_out2 <- as.data.frame(rbind(out_20_0[[1]][,8+c(1,2,4,5,7,8)], 
+                                           out_20_25[[1]][,8+c(1,2,4,5,7,8)], 
+                                           out_20_50[[1]][,8+c(1,2,4,5,7,8)], 
+                                           out_20_75[[1]][,8+c(1,2,4,5,7,8)]))
+
+
+K_20_beta_2_auc_out2 <- as.data.frame(rbind(out_20_0[[2]][,8+c(1,2,4,5,7,8)], 
+                                           out_20_25[[2]][,8+c(1,2,4,5,7,8)], 
+                                           out_20_50[[2]][,8+c(1,2,4,5,7,8)], 
+                                           out_20_75[[2]][,8+c(1,2,4,5,7,8)]))
+
+colnames(K_20_beta_1_auc_out2) <- 
+  colnames(K_20_beta_2_auc_out2) <- 
+  c("nocov", "cov", "ebp", "aic", "aaa", "oracle")
+K_20_beta_1_auc_out2$nu <- K_20_beta_2_auc_out2$nu <- rep(as.character(c(0,25,50,75)), each = 100)
+K_20_auc_out2 <- rbind(K_20_beta_1_auc_out2, K_20_beta_2_auc_out2)
+
+K_20_auc_out2$setup <- rep(c("(L,U)=(0.1,0.5)", "(L,U)=(1,1.5)"), 
+                         each = dim(K_20_beta_1_auc_out2)[1])
+
+
+K_20_auc_out2_melt <- melt(K_20_auc_out2)
+colnames(K_20_auc_out2_melt)[3:4] <- c("Method", "PAUROC") 
+
+#colnames(K_20_auc_out2_melt)
+
+K_20_auc_out2_mean <- 
+K_20_auc_out2_melt %.%
+  group_by(nu, setup, Method) %.%
+  summarise(PAUROC = mean(PAUROC))
+K_20_auc_out2_mean[K_20_auc_out2_mean$nu==0 & K_20_auc_out2_mean$Method == "nocov",][,4] <- 
+  mean(K_20_auc_out2_mean[K_20_auc_out2_mean$nu==0 & K_20_auc_out2_mean$Method == "nocov",][,4] )
+
+K_20_auc_out2_mean[K_20_auc_out2_mean$nu==0 & K_20_auc_out2_mean$Method == "cov",][,4] <- 
+  mean(K_20_auc_out2_mean[K_20_auc_out2_mean$nu==0 & K_20_auc_out2_mean$Method == "cov",][,4] )
+
+K_20_auc_out2_mean[K_20_auc_out2_mean$nu==0 & K_20_auc_out2_mean$Method == "ebp",][,4] <- 
+  mean(K_20_auc_out2_mean[K_20_auc_out2_mean$nu==0 & K_20_auc_out2_mean$Method == "ebp",][,4] )
+
+K_20_auc_out2_mean[K_20_auc_out2_mean$nu==0 & K_20_auc_out2_mean$Method == "aic",][,4] <- 
+  mean(K_20_auc_out2_mean[K_20_auc_out2_mean$nu==0 & K_20_auc_out2_mean$Method == "aic",][,4] )
+
+K_20_auc_out2_mean[K_20_auc_out2_mean$nu==0 & K_20_auc_out2_mean$Method == "aaa",][,4] <- 
+  mean(K_20_auc_out2_mean[K_20_auc_out2_mean$nu==0 & K_20_auc_out2_mean$Method == "aaa",][,4] )
+
+K_20_auc_out2_mean[K_20_auc_out2_mean$nu==0 & K_20_auc_out2_mean$Method == "oracle",][,4] <- 
+  mean(K_20_auc_out2_mean[K_20_auc_out2_mean$nu==0 & K_20_auc_out2_mean$Method == "oracle",][,4] )
+#save(K_20_auc_out2_mean, file = paste(wd, "/K_20/K_20_auc_out2_mean.RData", sep = ""))
+
+#load(file = paste(wd, "/K_20/K_20_auc_out2_mean.RData", sep = ""))
+p <- ggplot(K_20_auc_out2_mean, aes(nu, PAUROC, colour = Method, group = Method)) + geom_line()
+p3 <- p + facet_grid(.~setup )+
+  xlab(expression(paste(nu)))+
+  theme(axis.text=element_text(size=20),
+        axis.title=element_text(size=20))+ 
+      theme(strip.text.x = element_text(size=20))+
+  theme(legend.text = element_text(size=20))+ 
+  theme(legend.title = element_text(size=20))+
+  ggtitle("PAUROC (FPR < 0.05), n = 20")+ 
+     theme(plot.title = element_text(size=20,lineheight=.8, face="bold"))
+
+
+@
+
+
+
+
+
+<<fdpall20, echo = FALSE, results = 'asis',fig.show='hold',warning=FALSE,message=FALSE>>=
+
+K_20_beta_1_fdp_out <- as.data.frame(rbind(out_20_0[[1]][,16+c(1,2,4,5,7,8)], 
+                                           out_20_25[[1]][,16+c(1,2,4,5,7,8)], 
+                                           out_20_50[[1]][,16+c(1,2,4,5,7,8)], 
+                                           out_20_75[[1]][,16+c(1,2,4,5,7,8)]))
+
+
+K_20_beta_2_fdp_out <- as.data.frame(rbind(out_20_0[[2]][,16+c(1,2,4,5,7,8)], 
+                                           out_20_25[[2]][,16+c(1,2,4,5,7,8)], 
+                                           out_20_50[[2]][,16+c(1,2,4,5,7,8)], 
+                                           out_20_75[[2]][,16+c(1,2,4,5,7,8)]))
+
+colnames(K_20_beta_1_fdp_out) <- 
+  colnames(K_20_beta_2_fdp_out) <- 
+  c("nocov", "cov", "ebp", "aic", "aaa", "oracle")
+K_20_beta_1_fdp_out$nu <- K_20_beta_2_fdp_out$nu <- rep(as.character(c(0,25,50,75)), each = 100)
+K_20_fdp_out <- rbind(K_20_beta_1_fdp_out, K_20_beta_2_fdp_out)
+
+K_20_fdp_out$setup <- rep(c("(L,U)=(0.1,0.5)", "(L,U)=(1,1.5)"), 
+                         each = dim(K_20_beta_1_fdp_out)[1])
+
+
+K_20_fdp_out_melt <- melt(K_20_fdp_out)
+colnames(K_20_fdp_out_melt)[3:4] <- c("Method", "FDR") 
+
+#colnames(K_20_fdp_out_melt)
+
+K_20_fdp_out_mean <- 
+K_20_fdp_out_melt %.%
+  group_by(nu, setup, Method) %.%
+  summarise(FDR = mean(FDR))
+
+K_20_fdp_out_mean[K_20_fdp_out_mean$nu==0 & K_20_fdp_out_mean$Method == "nocov",][,4] <- 
+  mean(K_20_fdp_out_mean[K_20_fdp_out_mean$nu==0 & K_20_fdp_out_mean$Method == "nocov",][,4] )
+
+K_20_fdp_out_mean[K_20_fdp_out_mean$nu==0 & K_20_fdp_out_mean$Method == "cov",][,4] <- 
+  mean(K_20_fdp_out_mean[K_20_fdp_out_mean$nu==0 & K_20_fdp_out_mean$Method == "cov",][,4] )
+
+K_20_fdp_out_mean[K_20_fdp_out_mean$nu==0 & K_20_fdp_out_mean$Method == "ebp",][,4] <- 
+  mean(K_20_fdp_out_mean[K_20_fdp_out_mean$nu==0 & K_20_fdp_out_mean$Method == "ebp",][,4] )
+
+K_20_fdp_out_mean[K_20_fdp_out_mean$nu==0 & K_20_fdp_out_mean$Method == "aic",][,4] <- 
+  mean(K_20_fdp_out_mean[K_20_fdp_out_mean$nu==0 & K_20_fdp_out_mean$Method == "aic",][,4] )
+
+K_20_fdp_out_mean[K_20_fdp_out_mean$nu==0 & K_20_fdp_out_mean$Method == "aaa",][,4] <- 
+  mean(K_20_fdp_out_mean[K_20_fdp_out_mean$nu==0 & K_20_fdp_out_mean$Method == "aaa",][,4] )
+
+K_20_fdp_out_mean[K_20_fdp_out_mean$nu==0 & K_20_fdp_out_mean$Method == "oracle",][,4] <- 
+  mean(K_20_fdp_out_mean[K_20_fdp_out_mean$nu==0 & K_20_fdp_out_mean$Method == "oracle",][,4] )
+#save(K_20_fdp_out_mean, file = paste(wd, "/K_20/K_20_fdp_out_mean.RData", sep = ""))
+
+#load(file = paste(wd, "/K_20/K_20_fdp_out_mean.RData", sep = ""))
+
+p <- ggplot(K_20_fdp_out_mean, aes(nu, FDR, colour = Method, group = Method)) + geom_line()
+
+p4 <- p + facet_grid(.~setup )+
+  xlab(expression(paste(nu)))+
+  theme(axis.text=element_text(size=20),
+        axis.title=element_text(size=20))+ 
+      theme(strip.text.x = element_text(size = 20))+
+  theme(legend.text = element_text(size = 20))+ 
+  theme(legend.title = element_text(size = 20))+
+  ylab("Estimated FDR")+theme(axis.text=element_text(size=20),
+        axis.title=element_text(size=20))+
+  geom_hline(yintercept = 0.05)+
+  ggtitle("Control FDR at 5%, n = 20")+ 
+     theme(plot.title = element_text(size=20,lineheight=.8, face="bold"))
+
+@
+
+<<echo=FALSE,warning=FALSE,message=FALSE,error=FALSE,fig.width=16,fig.height=7>>=
+grid.arrange( p1, p2, p3,p4, ncol=2)
+
+@
+        
+        }
+      \end{block}
+      
+      \begin{block}{Comments on the Results and Conclusions}
+          \rmfamily{
+\begin{itemize}
+\item For the simulation settings we considered, the cov method based on 
+      $p_{j\tau|\beta}$  performed best overall.
+      
+\item The price paid for including an irrelevant covariate in the model 
+      was far less than the cost of excluding an important covariate. 
+      
+\item All other methods relied on $p_{j\tau}$  to some 
+      extent and performed poorly whenever a substantial portion of genes 
+      were associated with the covariate.
+      \item When $\beta_j \neq 0,$ $p_{j\tau}$ is likely to be inflated because 
+      variation in the response unexplained by the model pushes the test 
+      of $H_{0j}: \tau_{1j} = \tau_{2j}$ toward nonsignificance.
+
+\item Even when $\beta_j =0$, $p_{j\tau}$ is likely to be inflated if 
+      $\beta_{j^*} \neq 0$ for a substantial portion of genes $j^* \neq j$.
+      
+\item Borrowing information across genes to estimate gene-specific dispersions
+      can lead to overestimation of dispersions when $\beta_{j^*}\neq 0$ 
+      for many genes and the covariate is excluded from the model for each gene. 
+\item When using existing software for RNA-seq analysis that requires the model 
+      for each gene to have the same design matrix, it may be best to favor flexibility
+      over simplicity.
+
+\item More sophisticated empirical Bayes of fully Bayesian strategies for 
+      combining model selection and inference are needed.
+\end{itemize}
+          }
+        \end{block}
+        
+      \begin{block}{Acknowledgements}  
+      This material is based upon work supported by Agriculture and Food
+Research Initiative Competitive Grant No. 2011-68004-30336 from
+the USDA National Institute of Food and Agriculture, and the
+National Science Foundation (NSF) under Grant No. 0922746.
+
+      \end{block}
+      
   \end{column}
   \begin{column}{\sepwid}\end{column}			% empty spacer column
  \end{columns}
