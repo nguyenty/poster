@@ -7,6 +7,10 @@
 
 \documentclass[final]{beamer}
 \usepackage[scale=1.24]{beamerposter}
+% \documentclass[20pt]{beamer}
+% \usepackage[orientation=landscape,size=custom,width=90,height=51, debug]{beamerposter}
+% \documentclass{beamer}
+% \usepackage{beamerposter}
 \usecolortheme[RGB={0,0,144}]{structure}
 \usetheme{AnnArbor}\usecolortheme{beaver}
 \usepackage{graphicx}  		% allows us to import images
