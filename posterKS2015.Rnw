@@ -1,0 +1,302 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Multiplicative domain poster
+% Created by Nathaniel Johnston
+% August 2009
+% http://www.nathanieljohnston.com/2009/08/latex-poster-template/
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[final]{beamer}
+\usepackage[scale=1.2]{beamerposter}
+% \documentclass[20pt]{beamer}
+% \usepackage[orientation=landscape,size=custom,width=90,height=51, debug]{beamerposter}
+% \documentclass{beamer}
+% \usepackage{beamerposter}
+\usecolortheme[RGB={0,0,144}]{structure}
+\usetheme{AnnArbor}\usecolortheme{beaver}
+\usepackage{graphicx}  		% allows us to import images
+\usepackage{tikz}
+\usepackage{verbatim,xmpmulti,color,multicol,multirow}
+\usepackage{amssymb,amsmath,latexsym}
+%-----------------------------------------------------------
+% Custom commands that I use frequently
+%-----------------------------------------------------------
+
+\newcommand{\bb}[1]{\mathbb{#1}}
+\newcommand{\cl}[1]{\mathcal{#1}}
+\newcommand{\fA}{\mathfrak{A}}
+\newcommand{\fB}{\mathfrak{B}}
+\newcommand{\Tr}{{\rm Tr}}
+\newcommand{\x}{\boldsymbol{x}}
+\newcommand{\p}{\boldsymbol{p}}
+\newcommand{\q}{\boldsymbol{q}}
+\newcommand{\0}{\boldsymbol{0}}
+\def\bb{\boldsymbol{\beta}}
+\def\s{{\cal S}}
+\def\g{{\cal G}}
+\newtheorem{thm}{Theorem}
+
+%-----------------------------------------------------------
+% Define the column width and poster size
+% To set effective sepwid, onecolwid and twocolwid values, first choose how many columns you want and how much separation you want between columns
+% The separation I chose is 0.024 and I want 4 columns
+% Then set onecolwid to be (1-(4+1)*0.024)/4 = 0.22
+% Set twocolwid to be 2*onecolwid + sepwid = 0.464
+%-----------------------------------------------------------
+
+\newlength{\sepwid}
+\newlength{\onecolwid}
+\newlength{\twocolwid}
+\setlength{\paperwidth}{56in}
+\setlength{\paperheight}{40in}
+\setlength{\sepwid}{0.024\paperwidth}
+\setlength{\onecolwid}{0.22\paperwidth}
+\setlength{\twocolwid}{0.464\paperwidth}
+\setlength{\topmargin}{-1in}
+\usetheme{confposter}
+\usepackage{exscale}
+
+%-----------------------------------------------------------
+% The next part fixes a problem with figure numbering. Thanks Nishan!
+% When including a figure in your poster, be sure that the commands are typed in the following order:
+% \begin{figure}
+% \includegraphics[...]{...}
+% \caption{...}
+% \end{figure}
+% That is, put the \caption after the \includegraphics
+%-----------------------------------------------------------
+
+\usecaptiontemplate{
+\small
+\structure{\insertcaptionname~\insertcaptionnumber:}
+\insertcaption}
+
+%-----------------------------------------------------------
+% Define colours (see beamerthemeconfposter.sty to change these colour definitions)
+%-----------------------------------------------------------
+
+\setbeamercolor{block title}{fg=ngreen,bg=white}
+\setbeamercolor{block body}{fg=black,bg=white}
+\setbeamercolor{block alerted title}{fg=white,bg=dblue!70}
+\setbeamercolor{block alerted body}{fg=black,bg=white!10}
+
+%-----------------------------------------------------------
+% Name and authors of poster/paper/research
+%-----------------------------------------------------------
+
+\title{Detecting Differentially Expressed Genes with RNA-seq Data Using Backward Selection to Account for the Effects of Relevant Covariates}
+\author{Yet Nguyen and Dan Nettleton, Department of Statistics, Iowa State University\\
+Haibo Liu and Chris Tuggle, Department of Animal Science, Iowa State University}
+\date{April  28, 2015}
+%\institute{}
+
+%-----------------------------------------------------------
+% Start the poster itself
+%-----------------------------------------------------------
+% The \rmfamily command is used frequently throughout the poster to force a serif font to be used for the body text
+% Serif font is better for small text, sans-serif font is better for headers (for readability reasons)
+%-----------------------------------------------------------
+
+\begin{document}
+<<chunk_options, echo=FALSE, message=FALSE>>=
+opts_chunk$set(fig.width=8, fig.height=5, fig.align='center', size='tiny')
+####################################
+#  #
+####################################
+library(reshape)
+library(ggplot2)
+library(dplyr)
+library(gridExtra)
+@
+
+\addtobeamertemplate{headline}{} 
+{\begin{tikzpicture}[remember picture, overlay]
+     \node [anchor=north east, inner sep=3cm]  at (current page.north east)
+     {\includegraphics[height=5cm]{isu.png}};
+  \end{tikzpicture}}
+
+\begin{frame}[t,fragile]
+  \begin{columns}[t]												% the [t] option aligns the column's content at the top
+    \begin{column}{\sepwid}\end{column}			% empty spacer column
+    
+%     \begin{column}{\onecolwid}
+\begin{column}{\twocolwid}  
+      \begin{alertblock}{Introduction}
+        \rmfamily{ RNA-seq datasets often contain several covariates in addition to the factor of primary scientific interest. Either ignoring relevant covariates or accounting for the effects of irrelevant covariates can result in low power for identifying DE genes. To address the challenge of identifying DE genes with RNA-seq datasets that include covariates, we propose a backward selection algorithm for selecting a subset of covariates whose effects are estimated and adjusted for when testing for differential expression.}
+      \end{alertblock}
+
+\vskip2ex
+\begin{alertblock}{Generalized Linear Model for RNA-seq Read Count Data}
+        \rmfamily{ 
+        \begin{itemize}
+        \item Let $y_{gi}$ be the read count for gene $g$ from unit $i$  $(g = 1, \dots, m; i = 1, \dots, n) $. $y_{gi} \sim \mbox{NB}(\mu_{gi}, \omega_g)$, i.e., $ \mbox{Var}(y_{gi}) = \mu_{gi} + \omega_g \mu_{gi}^2$. 
+        
+        \item Let $\x_i=(\x'_{i1},\ldots, \x'_{ik})'$ denote a vector of known explanatory variable values for the $i$th unit. 
+        \item Letting ${\cal S}$ represent a subset of $\{1,\ldots,k\}$ that contains 1, we consider log-linear models of the form
+\begin{equation}\label{tlp}
+\log(\mu_{gi}) = o_{i} + \beta_{g0|{\cal S}} + \sum_{j\in {\cal S}} \x_{ij}'\bb_{gj|{\cal S}}
+\end{equation}
+
+\item Using \texttt{QuasiSeq} R package (Lund et al (2012)), we test $H_{0g1}^{\hat{\cal S}^*} : {\bb}_{g1|\hat{\cal S}^*}=\0$ to declare DE genes.
+        \end{itemize}
+        
+        }
+      \end{alertblock}
+
+\vskip2ex
+ \begin{alertblock}{The Proposed Backward Selection Algorithm}
+        \rmfamily{
+        Let $\s\subset \{1,\ldots,k\}$.  For any $j\in \s$, let $\p_{j|\s}$ denote the vector of $m$ $p$-values obtained by testing $H_{0gj}^{\s}:\bb_{gj|\s}=\0$ for $g=1,\ldots, m$. Let $r(\p_{j|\s})$ be a measure of the relevance of $\x_j$ in model (\ref{tlp}). Let $\s_1=\{1,\ldots,k\}$:
+
+\begin{enumerate}
+
+\item Compute $\p_{j|\s_{\ell}}$ for all $j \in \s_\ell$.
+
+\item Let $\q_\ell$ be the vector of $q$-values obtained from $\p_{1|\s_{\ell}}$.        
+
+\item Let $R_\ell(\alpha)$ be the number of $q$-values in $\q_\ell$ less than or equal to a user-defined FDR threshold $\alpha$.
+
+\item If $\s_\ell \neq \{1\}$, find $j^*$ so that $r(\p_{j^*|\s})<r(\p_{j|\s})$ for all $j \in \s_\ell \setminus \{j^*\}$.
+
+\item If $j^*=1$, stop iterating.  Otherwise, carry out the $\ell+1$st iteration with $\s_{\ell+1}=\s_\ell \setminus \{j^*\}$.
+
+\end{enumerate}
+
+Suppose the iterative procedure concludes after $L$ iterations, and let $\ell^*$ be the smallest element of $\{1,\ldots,L\}$ such that $R_{\ell^*}(\alpha)\geq R_\ell(\alpha)$ for all $\ell \in \{1,\ldots,L\}$.  We set $\hat{\s}=\s_{\ell^*}$ and base our inference about differential expression on the fit of model (\ref{tlp}).
+        }
+      \end{alertblock}
+      \vskip2ex
+            
+\begin{alertblock}{Analysis of RFI RNA-seq Dataset}
+\rmfamily{
+The dataset contains RNA-seq count from 31 animals of 2 genetic lines which has 12280 genes with average count greater than 8. We test those genes for differential expression between two lines ($\x_{\cdot 1}$) in the presence of the thirteen categorical and continuous covariates: RFI ($\x_{\cdot 2}$, continous), Diet ($\x_{\cdot 3}$, categorical, 2 levels), Baso ($\x_{\cdot 4}$, continuous), Eosi ($\x_{\cdot 5}$,  continuous), Lymp ($\x_{\cdot 6}$,  continuous), Mono ($\x_{\cdot 7}$, continuous), Neut ($\x_{\cdot 8}$, continuous), Concb ($\x_{\cdot 9}$, continuous), Conca ($\x_{\cdot 10}$, continuous), RINb ($\x_{\cdot 11}$, continuous), RINa ($\x_{\cdot 12}$, continuous), Block ($\x_{\cdot 13}$, categorical, 4 levels), and Order ($\x_{\cdot 14}$, categorical, 4 levels). The best subset of relevant covariates is obtained at iteration $\ell = 7$, and number of DE genes is 448 when FDR is controlled at 5\%.
+}
+
+\end{alertblock}
+
+
+    \begin{columns}[t,totalwidth=\twocolwid]  % split up that two-column-wide column
+        \begin{column}{\onecolwid}\vspace{-.69in}
+          \begin{block}{RFI RNA-seq Data Analysis - pvalue05}
+\rmfamily{
+\begin{figure}
+\centering
+\includegraphics[scale = 0.4]{PlotG9P2PairedEndCBCpvalue05.png}
+% \caption{The plot shows histograms of $p$-values of covariates at each iteration of backward selection procedure when applying to RFI RNA-seq dataset using the number of $p$-values less than 0.05 as the measure of covariate relevance.}
+\label{realdataplotpvalue05}
+\end{figure}
+}
+\end{block}
+
+        \end{column}
+        
+        \begin{column}{\onecolwid}\vspace{-.69in}
+              \begin{block}{RFI RNA-seq Data Analysis - ks}
+      \rmfamily{
+      \begin{figure}
+\centering
+\includegraphics[scale = 0.4]{PlotG9P2PairedEndCBCks.png}
+% \caption{The plot shows histograms of $p$-values of covariates at each iteration of backward selection procedure when applying to RFI RNA-seq dataset using the Kolmogorov-Smirnov-type statistic as the measure of covariate relevance. }
+\label{realdataplotks}
+\end{figure}
+      }
+    \end{block}
+        \end{column}
+      \end{columns}
+
+\vskip2ex
+    \end{column}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \begin{column}{\sepwid}\end{column}  		% empty spacer column
+    
+    \begin{column}{\twocolwid}							% create a two-column-wide column and then we will split it up later
+%       \begin{columns}[t,totalwidth=\twocolwid]	% split up that two-column-wide column
+%         \begin{column}{\onecolwid}\vspace{-.69in}
+%           \begin{alertblock}{Computing EBP}
+% \rmfamily{
+% }
+% \end{alertblock}
+% 
+%         \end{column}
+%         
+%         \begin{column}{\onecolwid}\vspace{-.69in}
+%               \begin{alertblock}{Evaluation of Methods}
+%       \rmfamily{
+%       
+%       }
+%     \end{alertblock}
+%         \end{column}
+%       \end{columns}
+% 
+
+\begin{alertblock}{Simulation Study}
+\rmfamily{
+\begin{itemize}
+\item [1.] Simulation 1: Using the set of covariates at iteration $\ell = 7$. $\s_\ell= \{1, 4, 5, 7, 8, 9, 12, 13\}$, the count data $y_{gi}$ of gene $g \;(g = 1, \ldots, 12280)$ and pig $i \;(i = 1, \ldots, 31)$ has  $\mbox{NB}(\mu_{gi}, \omega_g)$, where $\mbox{Var}(y_{gi}) = \mu_{gi} + \omega_g \mu_{gi}^2$, and 
+\begin{equation*} \label{alp1}
+\log(\mu_{gi}) = o_{i} + {\beta}_{g0|{\cal S}_\ell} +  \sum_{j\in {\cal S}_\ell} \x_{ij}'{\bb}_{gj|\s_\ell}.
+\end{equation*}
+Suppose that 
+ \begin{equation*}\label{est}
+ \hat{\omega}_{g|\s_\ell}, \hat{\bb}_{g0|\s_\ell}, \hat{\bb}_{gj|\s_\ell} \; (j \in \s_\ell) \mbox{  are the estimates of } \omega_{g},  \bb_{g0|\s_\ell},  \bb_{gj|\s_\ell},
+ \end{equation*}
+respectively, for $g = 1, \ldots, 12280$. Let $\hat{m}_{0}$ be the estimate of $m_0$,  the number of true null hypotheses among all $m = 12280$ hypotheses tested (for line effect, i.e., $\x_{\cdot 1}$). Let $\q_\ell = (q_{1|\s_\ell}, \ldots, q_{m|\s_\ell})$ be the vector of $q$-values obtained from testing $H_{0g1}^{\s_\ell} : \bb_{g1|\s_\ell} = \0$, $g = 1, \ldots, m$. Suppose that the order statistic of components of $\q_\ell$ is  $q_{(1)|\s_\ell}\leq \ldots \leq q_{(m)|\s_\ell}$. Set 
+
+\begin{equation*}\label{s1b}
+\tilde{\bb}_{g1|\s_\ell} = 
+\begin{cases}
+        \0              & \mbox{if } g\in \g_{0|\s_\ell} := \{g: q_g \geq q_{(m-\hat{m}_0+1)|\s_\ell}\} \\
+ \hat{\bb}_{g1|\s_\ell} & \mbox{if }  g \in \g_{1|\s_\ell} :=\{g:q_g < q_{(m-\hat{m}_0+1)|\s_\ell}\}. 
+\end{cases}
+\end{equation*}
+\begin{equation*} \label{s1m}
+\log(\tilde{\mu}_{gi|\s_\ell}) = o_{i} + \hat{{\beta}}_{g0|{\cal S}_\ell} + \x_{i1}'\tilde{\bb}_{g1|{\cal S}_\ell} + \sum_{j\in {\cal S}_\ell\setminus \{1\} } \x_{ij}'\hat{\bb}_{gj|{\cal S}_\ell}.
+\end{equation*}
+
+We simulate 100 datasets, each dataset consists of $m^* = 5000$ genes with different  $\pi$,  the proportion of EE genes, $ \pi \in \{ 0.6, 0.7, 0.8, 0.9\}$. First, we randomly sample $\g_{0}^* = \{g_1, \ldots, g_{m^*\pi} \}\subset \g_{0|\s_\ell}$,  $\g_{1}^* = \{ g_{m^*\pi +1}, \ldots, g_{m^*}\}\subset \g_{1|\s_\ell}$. Finally, for each $h \in \{1, \ldots, m^*\}, i \in \{1, \ldots, 31\}$,  we simulate  $\tilde{y}_{hi}$ from $\mbox{NB}(\tilde{\mu}_{g_hi|\s_\ell}, \hat{\omega}_{g_h|\s_\ell})$. The collection of $\tilde{y}_{hi} $ is the simulated count data we need. 
+\item Simulation 2:  Using the Set of Covariates from Iteration $\ell     \in \{6, 7, 8, 9\} $.
+\item Simulation 3: Using the set of Covariates from Iteration $\ell \in \{6, 7, 8, 9\}$ with modified RFI values ($\x_{\cdot 2}$).
+\end{itemize}
+}
+\end{alertblock}
+
+\begin{block}{Simulation Results}		% an ACTUAL two-column-wide column
+        \rmfamily{
+        \begin{figure}[!htb]
+\minipage{0.32\textwidth}
+  \includegraphics[width=\linewidth]{sim1plot.pdf}
+  \caption{Simulation 1.}\label{fig:awesome_image1}
+\endminipage\hfill
+\minipage{0.32\textwidth}
+  \includegraphics[width=\linewidth]{sim2plot.pdf}
+  \caption{Simulation 2.}\label{fig:awesome_image2}
+\endminipage\hfill
+\minipage{0.32\textwidth}%
+  \includegraphics[width=\linewidth]{sim3plot.pdf}
+  \caption{Simulaton 3.}\label{fig:awesome_image3}
+\endminipage
+\end{figure}
+        }
+      \end{block}
+      
+%       \begin{alertblock}{Comments on the Results and Conclusions}
+%           \rmfamily{
+% \begin{itemize}
+% \item The backward selection procedures provide a simple and comparatively effective method in differential expression analysis accounting for relevant covariates. In our simulation study, the proposed methods outperform the alternative approaches such as method including or excluding all covariate in terms of power and FDR control. 
+% 
+% \end{itemize}
+%           }
+%         \end{alertblock}
+        
+      \begin{alertblock}{Acknowledgements}  
+      This material is based upon work supported by Agriculture and Food
+Research Initiative Competitive Grant No. 2011-68004-30336 from
+the USDA National Institute of Food and Agriculture, and the National Science Foundation (NSF) under Grant No. 0922746. This research also was supported by National Institute of General Medical Sciences (NIGMS) of the National Institutes of Health and the joint National Science Foundation / NIGMS Mathematical Biology Program under award number R01GM109458. The content is solely the responsibility of the authors and does not necessarily represent the official views of the National Institutes of Health or the National Science Foundation.
+
+      \end{alertblock}
+      
+  \end{column}
+  \begin{column}{\sepwid}\end{column}			% empty spacer column
+ \end{columns}
+\end{frame}
+\end{document}
